@@ -20,7 +20,17 @@ if TYPE_CHECKING:
 @Format.register("stru")
 class AbacusSTRUFormat(Format):
     def from_system(self, file_name, **kwargs):
-        return dpdata.abacus.scf.get_frame_from_stru(file_name)
+        data = dpdata.abacus.scf.get_frame_from_stru(file_name)
+        if "spins" in data:
+            dt = DataType(
+                "spins",
+                np.ndarray,
+                (Axis.NFRAMES, Axis.NATOMS, 3),
+                required=False,
+                deepmd_name="spin",
+            )
+            dpdata.System.register_data_type(dt)
+        return data
 
     def to_system(self, data, file_name: FileType, frame_idx=0, **kwargs):
         """Dump the system into ABACUS STRU format file.
