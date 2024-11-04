@@ -341,7 +341,8 @@ def get_coords(celldm, cell, geometry_inlines, inlines=None):
             coords.append(xyz)
             atom_types.append(it)
 
-            move.append(imove)
+            if imove is not None:
+                move.append(imove)
             velocity.append(ivelocity)
             sc.append(iconstrain)
             lambda_.append(ilambda1)
@@ -355,7 +356,7 @@ def get_coords(celldm, cell, geometry_inlines, inlines=None):
             line_idx += 1
     coords = np.array(coords)  # need transformation!!!
     atom_types = np.array(atom_types)
-    return atom_names, atom_numbs, atom_types, coords, mags
+    return atom_names, atom_numbs, atom_types, coords, move, mags
 
 
 def get_energy(outlines):
@@ -522,7 +523,7 @@ def get_frame(fname):
         outlines = fp.read().split("\n")
 
     celldm, cell = get_cell(geometry_inlines)
-    atom_names, natoms, types, coords,magmom = get_coords( # here the magmom is the initial magnetic moment in STRU
+    atom_names, natoms, types, coords, move, magmom = get_coords( # here the magmom is the initial magnetic moment in STRU
         celldm, cell, geometry_inlines, inlines
     )
     
@@ -557,6 +558,8 @@ def get_frame(fname):
         data["spins"] = magmom
     if len(magforce) > 0:
         data["mag_forces"] = magforce
+    if len(move) > 0:
+        data["move"] = move[np.newaxis, :, :]
     # print("atom_names = ", data['atom_names'])
     # print("natoms = ", data['atom_numbs'])
     # print("types = ", data['atom_types'])
@@ -608,7 +611,7 @@ def get_frame_from_stru(fname):
     nele = get_nele_from_stru(geometry_inlines)
     inlines = [f"ntype {nele}"]
     celldm, cell = get_cell(geometry_inlines)
-    atom_names, natoms, types, coords,magmom = get_coords(
+    atom_names, natoms, types, coords, move, magmom = get_coords(
         celldm, cell, geometry_inlines, inlines
     )
     data = {}
@@ -619,6 +622,8 @@ def get_frame_from_stru(fname):
     data["coords"] = coords[np.newaxis, :, :]
     data["orig"] = np.zeros(3)
     data["spins"] = np.array([magmom])
+    if len(move) > 0:
+        data["move"] = move[np.newaxis, :, :]
 
     return data
 
@@ -657,8 +662,8 @@ def make_unlabeled_stru(
         numerical descriptor file
     mass : list of float, optional
         List of atomic masses
-    move : list of list of bool, optional
-        List of the move flag of each xyz direction of each atom
+    move : list of (list of list of bool), optional
+        List of the move flag of each xyz direction of each atom for each frame
     velocity : list of list of float, optional
         List of the velocity of each xyz direction of each atom
     mag : list of (list of float or float), optional
@@ -731,6 +736,9 @@ def make_unlabeled_stru(
 
     if mag is None and data.get("spins") is not None and len(data["spins"]) > 0:
         mag = data["spins"][frame_idx]
+
+    if move is None and data.get("move", None) is not None and len(data["move"]) > 0:
+        move = data["move"][frame_idx]
 
     atom_numbs = sum(data["atom_numbs"])
     for key in [move, velocity, mag, angle1, angle2, sc, lambda_]:
