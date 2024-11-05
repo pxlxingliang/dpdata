@@ -559,7 +559,7 @@ def get_frame(fname):
     if len(magforce) > 0:
         data["mag_forces"] = magforce
     if len(move) > 0:
-        data["move"] = move[np.newaxis, :, :]
+        data["move"] = np.array([move])
     # print("atom_names = ", data['atom_names'])
     # print("natoms = ", data['atom_numbs'])
     # print("types = ", data['atom_types'])
