@@ -623,7 +623,7 @@ def get_frame_from_stru(fname):
     data["orig"] = np.zeros(3)
     data["spins"] = np.array([magmom])
     if len(move) > 0:
-        data["move"] = move[np.newaxis, :, :]
+        data["move"] = np.array([move])
 
     return data
 
