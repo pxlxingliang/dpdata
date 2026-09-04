@@ -493,26 +493,31 @@ def get_frame_from_stru(stru):
     )
 
     cell, coords = right_hand_rule(cell, coords)
+    uniq_name = []
+    uniq_atom_num = []
+    for i in atom_names:
+        if i not in uniq_name:
+            uniq_name.append(i)
+            uniq_atom_num.append(sum([atom_numbs[j] for j in range(len(atom_names)) if atom_names[j] == i]))
     data = {
-        "atom_names": atom_names,
-        "atom_numbs": atom_numbs,
+        "atom_names": uniq_name,
+        "atom_numbs": uniq_atom_num,
         "atom_types": np.array(
-            [i for i in range(len(atom_numbs)) for j in range(atom_numbs[i])]
+            [uniq_name.index(atom_names[i]) for i in range(len(atom_numbs)) for j in range(atom_numbs[i])]
         ),
         "masses": np.array(masses),
-        "pp_files": pp_files,
+        "pp_files": [pp_files[atom_names.index(i)] for i in uniq_name],
         "cells": np.array([cell]),
         "coords": np.array([coords]),
     }
     if len(mags) > 0:
         data["spins"] = np.array([mags])
     if len(orb_files) > 0:
-        data["orb_files"] = orb_files
+        data["orb_files"] = [orb_files[atom_names.index(i)] for i in uniq_name]
     if len(dpks_descriptor) > 0:
         data["dpks_descriptor"] = dpks_descriptor[0].strip()
     if len(move) > 0:
         data["move"] = np.array([move])
-
     return data
 
 
