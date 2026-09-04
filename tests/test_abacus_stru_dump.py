@@ -268,7 +268,7 @@ class TestStruRepeatAtomtype(unittest.TestCase):
         self.assertEqual(sys_tmp.data["atom_names"], ["C", "H"])
         self.assertEqual(sys_tmp.data["atom_numbs"], [1, 4])
         self.assertEqual(sys_tmp.data["atom_types"].tolist(), [0, 1, 1, 1, 1])
-        self.assertEqual(sys_tmp.data["masses"].tolist(), [1.0, 1.0, 1.0])
+        self.assertEqual(sys_tmp.data["masses"].tolist(), [1.0, 1.0])
         self.assertEqual(
             sys_tmp.data["pp_files"], ["C_ONCV_PBE-1.0.upf", "H_ONCV_PBE-1.0.upf"]
         )
@@ -280,8 +280,10 @@ class TestStruRepeatAtomtype(unittest.TestCase):
         sys_tmp.to("stru", "STRU_tmp", mass=[12, 1])
         with open("STRU_tmp") as f:
             c = f.read()
-        self.assertTrue("ATOMIC_SPECIES\nC 12.000 C_ONCV_PBE-1.0.upf\nH 1.000 H_ONCV_PBE-1.0.upf" in c)
-        self.assertTrue(c.count("H\n") >= 1)
+        self.assertTrue(
+            "ATOMIC_SPECIES\nC 12.000 C_ONCV_PBE-1.0.upf\nH 1.000 H_ONCV_PBE-1.0.upf" in c
+        )
+        self.assertTrue("H\n0.0\n4\n" in c)
         os.remove("STRU_tmp")
 
 

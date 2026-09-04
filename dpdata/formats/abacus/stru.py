@@ -505,7 +505,7 @@ def get_frame_from_stru(stru):
         "atom_types": np.array(
             [uniq_name.index(atom_names[i]) for i in range(len(atom_numbs)) for j in range(atom_numbs[i])]
         ),
-        "masses": np.array(masses),
+        "masses": np.array([masses[atom_names.index(i)] for i in uniq_name]),
         "pp_files": [pp_files[atom_names.index(i)] for i in uniq_name],
         "cells": np.array([cell]),
         "coords": np.array([coords]),
