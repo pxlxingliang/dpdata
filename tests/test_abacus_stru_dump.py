@@ -287,6 +287,44 @@ class TestStruRepeatAtomtype(unittest.TestCase):
         self.assertTrue("H\n0.0\n4\n" in c)
         os.remove("STRU_tmp")
 
+    def test_read_stru_with_conflicting_duplicate_atomtype(self):
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "Conflicting duplicate species 'H'.*mass 2.0 != 1.0",
+        ):
+            dpdata.System("abacus.scf/STRU-conflict-atomtype.ch4", fmt="stru")
+
+    def test_validate_duplicate_species(self):
+        from dpdata.formats.abacus.stru import validate_duplicate_species
+
+        validate_duplicate_species(
+            ["C", "H", "H"],
+            [1.0, 1.0, 1.0],
+            ["C.upf", "H.upf", "H.upf"],
+            ["c.orb", "h.orb", "h.orb"],
+        )
+        with self.assertRaisesRegex(RuntimeError, "mass"):
+            validate_duplicate_species(
+                ["C", "H", "H"],
+                [1.0, 1.0, 2.0],
+                ["C.upf", "H.upf", "H.upf"],
+                ["c.orb", "h.orb", "h.orb"],
+            )
+        with self.assertRaisesRegex(RuntimeError, "pp_file"):
+            validate_duplicate_species(
+                ["C", "H", "H"],
+                [1.0, 1.0, 1.0],
+                ["C.upf", "H.upf", "O.upf"],
+                ["c.orb", "h.orb", "h.orb"],
+            )
+        with self.assertRaisesRegex(RuntimeError, "orb_file"):
+            validate_duplicate_species(
+                ["C", "H", "H"],
+                [1.0, 1.0, 1.0],
+                ["C.upf", "H.upf", "H.upf"],
+                ["c.orb", "h.orb", "o.orb"],
+            )
+
 
 class TestABACUSParseStru(unittest.TestCase):
     def test_parse_pos_oneline(self):

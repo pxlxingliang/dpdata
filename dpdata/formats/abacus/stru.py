@@ -441,6 +441,46 @@ def right_hand_rule(
     return cell, coord
 
 
+def validate_duplicate_species(atom_names, masses, pp_files, orb_files):
+    """Check that duplicate atom species definitions are consistent.
+
+    get_frame_from_stru merges repeated labels and keeps the metadata of the
+    first matching row for masses, pp_files, and orb_files. If a duplicate
+    row conflicts with the first one, raise an error instead of silently
+    discarding the conflicting metadata.
+
+    Args:
+        atom_names (list): list of atom names.
+        masses (list): list of atomic masses.
+        pp_files (list): list of pseudo potential files.
+        orb_files (list): list of orbital files.
+
+    Raises
+    ------
+        RuntimeError: if duplicate species have conflicting metadata.
+    """
+    for name in dict.fromkeys(atom_names):
+        indices = [j for j in range(len(atom_names)) if atom_names[j] == name]
+        if len(indices) < 2:
+            continue
+        ref_mass = masses[indices[0]]
+        ref_pp = pp_files[indices[0]]
+        ref_orb = orb_files[indices[0]] if orb_files else None
+        for j in indices[1:]:
+            if not np.isclose(masses[j], ref_mass):
+                raise RuntimeError(
+                    f"Conflicting duplicate species '{name}': mass {masses[j]} != {ref_mass}"
+                )
+            if pp_files[j] != ref_pp:
+                raise RuntimeError(
+                    f"Conflicting duplicate species '{name}': pp_file {pp_files[j]} != {ref_pp}"
+                )
+            if ref_orb is not None and orb_files[j] != ref_orb:
+                raise RuntimeError(
+                    f"Conflicting duplicate species '{name}': orb_file {orb_files[j]} != {ref_orb}"
+                )
+
+
 def get_frame_from_stru(stru):
     """Read the ABACUS STRU file and return the dpdata frame.
 
@@ -491,6 +531,8 @@ def get_frame_from_stru(stru):
     atom_numbs, coords, move, mags, velocity, sc, lambda_ = parse_pos(
         blocks["ATOMIC_POSITIONS"], atom_names, celldm, cell
     )
+
+    validate_duplicate_species(atom_names, masses, pp_files, orb_files)
 
     cell, coords = right_hand_rule(cell, coords)
     uniq_name = []
