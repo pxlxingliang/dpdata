@@ -281,7 +281,8 @@ class TestStruRepeatAtomtype(unittest.TestCase):
         with open("STRU_tmp") as f:
             c = f.read()
         self.assertTrue(
-            "ATOMIC_SPECIES\nC 12.000 C_ONCV_PBE-1.0.upf\nH 1.000 H_ONCV_PBE-1.0.upf" in c
+            "ATOMIC_SPECIES\nC 12.000 C_ONCV_PBE-1.0.upf\nH 1.000 H_ONCV_PBE-1.0.upf"
+            in c
         )
         self.assertTrue("H\n0.0\n4\n" in c)
         os.remove("STRU_tmp")
